@@ -54,9 +54,11 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 from collections import Counter
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import replace
-from typing import Any, Callable, Iterable
+from typing import Any, Callable, Iterable, get_args
 
 from criteria import EligibilityCriteria, ExclusionCode, get as get_criteria
 from retrieval import MCPDispatcher, build_citations_index
@@ -148,9 +150,37 @@ def enrich_record(record: Record, mcp: MCPDispatcher) -> Record:
     return record
 
 
-def enrich_all(records: list[Record], mcp: MCPDispatcher) -> list[Record]:
-    """Enrich every record. Order preserved; failures fall back per-record."""
-    return [enrich_record(r, mcp) for r in records]
+def enrich_all(
+    records: list[Record],
+    mcp: MCPDispatcher,
+    *,
+    max_workers: int = 8,
+) -> list[Record]:
+    """Enrich every record, concurrently. Order preserved; failures fall
+    back per-record (enrich_record already catches its own exceptions and
+    returns the un-enriched record — that contract is unchanged here).
+
+    This was previously a plain serial list comprehension — one HTTP round
+    trip per record, one at a time, even though every record's enrichment
+    is fully independent of every other. That's pure network-bound wait
+    time with no reason to be sequential, and was a real contributor to a
+    live run taking over an hour on a ~800-initial-hit COI.
+
+    max_workers=8 is a starting point, not tuned against a hard ceiling:
+    live_clients.py's _throttle() is now thread-safe (a shared lock, not
+    per-thread), so raising max_workers doesn't bypass the rate limit —
+    it just lets more threads queue up waiting on the same shared pacing,
+    which is exactly what should happen. Total request rate across all
+    workers is still capped by _MIN_INTERVAL regardless of max_workers.
+    """
+    if not records:
+        return []
+    with ThreadPoolExecutor(max_workers=max_workers) as pool:
+        # map() preserves input order in its output order, even though
+        # completion order across threads is unordered — exactly what's
+        # needed here, since downstream code (eligibility_screen, PRISMA
+        # counts) assumes records stay in their original sequence.
+        return list(pool.map(lambda r: enrich_record(r, mcp), records))
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -240,6 +270,18 @@ def _strip_fences(text: str) -> str:
     return t.strip()
 
 
+_TRAILING_COMMA_RE = re.compile(r",(\s*[\]}])")
+
+
+def _fix_trailing_commas(text: str) -> str:
+    """Same fix as screen.py's — kept duplicated rather than shared per
+    this file's existing convention (see _strip_fences/_batches, both
+    already near-duplicates of screen.py's versions). Strips a trailing
+    comma before a closing ]/} — a JSON5-ism the model occasionally
+    emits, narrow enough that it can't change any actual returned value."""
+    return _TRAILING_COMMA_RE.sub(r"\1", text)
+
+
 class EligibilityDecision:
     """Lightweight record of one eligibility judgment. Kept for the audit trail."""
 
@@ -252,6 +294,26 @@ class EligibilityDecision:
         self.exclusion_code = exclusion_code
         self.reason = reason
         self.reversed_from_screen = reversed_from_screen
+
+
+_VALID_EXCLUSION_CODES = set(get_args(ExclusionCode))
+
+
+def _normalize_exclusion_code(code_raw: str | None, reason: str) -> tuple[str, str]:
+    """Same validation as screen.py's — kept as a near-duplicate rather
+    than a shared import so eligibility.py and screen.py stay independent
+    siblings (matches this file's existing convention, e.g. its own
+    _batches() helper duplicated rather than imported from screen.py)."""
+    if code_raw in _VALID_EXCLUSION_CODES:
+        return code_raw, reason
+    if code_raw:
+        log.warning(
+            "Unrecognized exclusion_code %r from model (expected one of %s); "
+            "normalizing to insufficient_metadata",
+            code_raw, sorted(_VALID_EXCLUSION_CODES),
+        )
+        return "insufficient_metadata", f"{reason} (raw model code: {code_raw})"
+    return "insufficient_metadata", reason
 
 
 def _parse_decisions(raw: str, batch: list[Record]) -> list[EligibilityDecision]:
@@ -267,7 +329,7 @@ def _parse_decisions(raw: str, batch: list[Record]) -> list[EligibilityDecision]
     }
 
     try:
-        payload = json.loads(_strip_fences(raw))
+        payload = json.loads(_fix_trailing_commas(_strip_fences(raw)))
     except json.JSONDecodeError as e:
         log.warning("Eligibility batch JSON parse failed: %s", e)
         return list(fallback.values())
@@ -289,11 +351,14 @@ def _parse_decisions(raw: str, batch: list[Record]) -> list[EligibilityDecision]
             include, code = False, code_raw
         if not include and code is None:
             code = "insufficient_metadata"
+        reason_text = str(row.get("reason", ""))[:250]
+        if not include:
+            code, reason_text = _normalize_exclusion_code(code, reason_text)
         fallback[cid] = EligibilityDecision(
             citation_id=cid,
             include=include,
             exclusion_code=code,
-            reason=str(row.get("reason", ""))[:250],
+            reason=reason_text,
             reversed_from_screen=bool(row.get("reversed_from_screen", False)),
         )
     return [fallback[r.citation_id] for r in batch]
@@ -310,16 +375,32 @@ def eligibility_screen(
     llm: LLMDispatcher,
     *,
     batch_size: int = 15,   # smaller than screen.py's 20 — full records are bigger per-item
+    batch_workers: int = 4,
 ) -> tuple[list[Record], list[EligibilityDecision]]:
-    """Run the full-record eligibility judgment. Returns (included, decisions)."""
+    """Run the full-record eligibility judgment. Returns (included, decisions).
+
+    Batches run concurrently (same rationale as enrich_all() above): each
+    batch's LLM call is independent network-bound work. map() preserves
+    order, and _parse_decisions is fault-tolerant (a malformed batch becomes
+    conservative excludes, never raises), so the pool can't be poisoned by a
+    single bad response. Aggregation stays serial and race-free. NOTE: total
+    concurrent gateway calls = COI_workers (als_dryRun) * batch_workers;
+    lower either if the gateway rate-limits."""
     criteria = get_criteria(coi)
     included: list[Record] = []
     all_decisions: list[EligibilityDecision] = []
 
-    for batch in _batches(records, batch_size):
+    def _run_batch(batch: list[Record]) -> tuple[list[Record], list[EligibilityDecision]]:
         user_msg = _build_batch_user_message(criteria, batch)
         raw = llm(_SYSTEM_PROMPT, user_msg)
-        decisions = _parse_decisions(raw, batch)
+        return batch, _parse_decisions(raw, batch)
+
+    batches = list(_batches(records, batch_size))
+    workers = max(1, min(batch_workers, len(batches)))
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        results = list(pool.map(_run_batch, batches))
+
+    for batch, decisions in results:
         cid_to_record = {r.citation_id: r for r in batch}
         for d in decisions:
             all_decisions.append(d)
@@ -338,8 +419,14 @@ def eligibility(
     coi: str,
     mcp: MCPDispatcher,
     llm: LLMDispatcher,
+    *,
+    enrich_workers: int = 8,
 ) -> tuple[list[Record], dict[str, Record], dict[str, Any]]:
     """The eligibility node's full pipeline: enrich, judge, freeze.
+
+    `enrich_workers` is passed straight through to enrich_all()'s thread
+    pool — exposed here rather than hardcoded so graph.py can tune it per
+    run without another signature change later.
 
     Returns:
       corpus:           the final, included Record list — THIS IS FROZEN.
@@ -354,7 +441,7 @@ def eligibility(
                             "reversals_from_screen": <int>,
                             "decisions": [...]}  # audit trail
     """
-    enriched = enrich_all(screened_records, mcp)
+    enriched = enrich_all(screened_records, mcp, max_workers=enrich_workers)
     included, decisions = eligibility_screen(enriched, coi, llm)
 
     reason_counts: Counter[str] = Counter(

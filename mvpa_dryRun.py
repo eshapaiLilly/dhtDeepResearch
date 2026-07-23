@@ -49,7 +49,12 @@ def main() -> None:
         # Higher max_tokens than screen/eligibility's default — the
         # evidence node's JSON output (device rows + gap log for a large
         # corpus) needs more room than a per-record classifier decision.
-        evidence_llm = make_lilly_llm_dispatcher(model=DEFAULT_SYNTHESIS_MODEL, max_tokens=8000)
+        # Raised from 8000 after a real run produced an empty response
+        # (see llm_client._response_text's diagnostic raise) — if this
+        # still happens, the diagnostic will show stop_reason and content
+        # block types so we know definitively whether it's a token-budget
+        # issue or something else (e.g. a gateway-side reasoning mode).
+        evidence_llm = make_lilly_llm_dispatcher(model=DEFAULT_SYNTHESIS_MODEL, max_tokens=16000)
     else:
         log.warning(
             "Skill file not found at %s — evidence node will be skipped "

@@ -343,7 +343,15 @@ def run_evidence(
     user_message = build_evidence_user_message(indication, coi, corpus)
 
     log.info("evidence[%s]: calling model over %d-record corpus", coi, len(corpus))
-    raw = llm(system_prompt, user_message)
+    try:
+        raw = llm(system_prompt, user_message)
+    except RuntimeError as e:
+        # llm_client._response_text raises this with real diagnostic detail
+        # (stop_reason, content block types) when the model returns no
+        # usable text — surface it as-is rather than letting it fall
+        # through to json.loads and produce an uninformative parse error.
+        log.error("evidence[%s]: model call produced no usable text: %s", coi, e)
+        return [], [], None, {"orphan_citations_stripped": [], "parse_error": str(e), "exclusion_log": []}
 
     device_rows, gaps, coi_evidence, report = parse_evidence_response(
         raw, coi, set(citations_index.keys())

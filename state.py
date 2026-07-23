@@ -208,18 +208,18 @@ class PRISMACounts(TypedDict, total=False):
     also happens to match how a real PRISMA diagram wants it: exclusion
     reasons reported per-stage, not pooled.
     """
-    identification_by_source: dict[str, int]   # {"pubmed": 512, "clinicaltrials": 388, ...}
+    identification_by_source: dict[str, int]
     identification_total: int
+    identification_capped_by_source: dict[str, bool]   # NEW — per-source: capped by total_cap_per_source vs. genuinely exhausted
     after_dedup: int
     screened: int
     screened_excluded: int
-    screen_excluded_reasons: dict[str, int]        # {"wrong_population": 47, ...}
+    screen_excluded_reasons: dict[str, int]
     eligible: int
     eligible_excluded: int
     eligible_excluded_reasons: dict[str, int]
     reversals_from_screen: int
     included: int
-
 
 class VerifyReport(TypedDict, total=False):
     """Output of the verify node. Presence of orphans is a blocking condition

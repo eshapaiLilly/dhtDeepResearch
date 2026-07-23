@@ -39,6 +39,7 @@ from langgraph.graph import StateGraph, START, END
 
 from state import DHTState, dict_override_or_merge  # noqa: F401 (dict_override_or_merge documented for graph builders who need it explicitly)
 from criteria import get as get_criteria
+from recall_patterns import expand_search_plan, s2_bulk_query_syntax
 from retrieval import identify as run_identify, MCPDispatcher
 from screen import screen as run_screen, LLMDispatcher as ScreenLLM
 from eligibility import eligibility as run_eligibility, LLMDispatcher as EligLLM
@@ -49,37 +50,86 @@ log = logging.getLogger(__name__)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Search-plan construction — PLACEHOLDER
+# Search-plan construction
 # ─────────────────────────────────────────────────────────────────────────────
-# This is deliberately minimal: it just ORs together the positive_signals
-# keyword hints already in criteria.py into a ClinicalTrials.gov + PubMed
-# query. It does NOT do the sub-construct vocabulary elicitation the
-# landscape-scout skill's "Retrieval Requirements" section calls for
-# (mapping "Range of Motion" -> "reachable workspace", "head drop", etc. for
-# ALS specifically). That elicitation needs a Python-fetch + model-judge
-# round trip (pull outcome-measure text from completed trials, have the
-# model decide which are genuinely new sub-constructs) — see Open Questions
-# ledger item 2 for why that control flow isn't designed yet.
+# Two changes from the original placeholder, both recall-motivated:
 #
-# This placeholder is good enough to produce a real corpus for a COI where
-# the label IS close to the literature's vocabulary — which MVPA is. It is
-# NOT good enough for a genuinely novel COI where the label and the
-# literature's terms diverge. Replace before running this on one of those.
+#   1. No more positive_signals[:8] truncation, and no single mega-OR query.
+#      A single OR-of-everything query dilutes source-side relevance ranking
+#      and silently dropped every signal past the 8th (COIs like
+#      range_of_motion have a dozen+). We now chunk ALL signals into small
+#      parallel query lanes — the "parallel search lanes, never substituted
+#      for the label" that the landscape-scout skill's Retrieval Requirements
+#      section calls for. Dedup in retrieval.py collapses overlap across lanes.
+#
+#   2. recall_patterns.expand_search_plan() adds the naming-fragmentation
+#      recovery lanes (device-class reverse search + construct-level PI
+#      recovery). This is the previously-unbuilt recovery the SKILL.md Open
+#      Questions ledger calls the highest-stakes gap. It is now on by default;
+#      pass use_recall_patterns=False for an A/B baseline against the old
+#      behavior.
+#
+# Still NOT done here: the split-brain (Python -> model -> Python) PI-by-author
+# recovery and dynamic sub-construct elicitation from completed-trial outcome
+# text (Open Questions ledger item 2). recall_patterns.py hand-encodes the
+# construct vocabulary instead; that control flow remains a documented TODO.
 
-def default_search_plan(coi: str, indication: str) -> dict:
-    """Minimal query-plan builder from criteria.py's positive_signals."""
+def _chunk(seq: list, size: int):
+    for i in range(0, len(seq), size):
+        yield seq[i : i + size]
+
+
+def default_search_plan(
+    coi: str,
+    indication: str,
+    *,
+    signal_chunk_size: int = 4,
+    use_recall_patterns: bool = True,
+) -> dict:
+    """Build a multi-lane query plan from criteria.py's positive_signals,
+    then (by default) expand it with recall_patterns recovery lanes.
+
+    `signal_chunk_size` controls the precision/recall tradeoff: smaller
+    chunks = more, tighter lanes (higher recall, more requests); larger
+    chunks trend back toward the old single-blob behavior. 4 is a balance.
+    """
     criteria = get_criteria(coi)
-    signal_terms = criteria.positive_signals[:8]  # cap — don't let this balloon
-    outcome_query = " OR ".join(f'"{t}"' if " " in t else t for t in signal_terms)
+    signals = list(criteria.positive_signals)  # no truncation
 
-    return {
-        "clinicaltrials": [
-            {"query.cond": indication, "query.outc": outcome_query},
-        ],
-        "pubmed": [
-            {"query": f"{indication} AND ({outcome_query})"},
-        ],
+    ctg_lanes: list[dict] = []
+    pm_lanes: list[dict] = []
+    epmc_lanes: list[dict] = []
+    s2_lanes: list[dict] = []
+
+    for chunk in _chunk(signals, signal_chunk_size):
+        outc = " OR ".join(f'"{t}"' if " " in t else t for t in chunk)
+        ctg_lanes.append({"query.cond": indication, "query.outc": outc})
+        pm_lanes.append({"query": f"{indication} AND ({outc})"})
+        # Europe PMC preprint-inclusive lane. TITLE_ABS scopes to
+        # title+abstract; SRC filter is applied in live_clients so this
+        # single lane covers bioRxiv/medRxiv + peer-reviewed at once.
+        epmc_lanes.append({"query": f'({outc}) AND "{indication}"'})
+        # Semantic Scholar lane — independent index/host from Europe PMC,
+        # so recall here doesn't depend on EBI connectivity/cert health.
+        # Uses bulk search's actual boolean syntax (`|` for OR), built from
+        # the raw chunk — NOT the shared `outc` string above, which uses
+        # the literal word "OR" for CTG/PubMed/EuropePMC (all three of
+        # those DO treat "OR"/"AND" as real boolean operators in their own
+        # query grammars; S2 bulk search does not, and would search for
+        # the literal word "or" instead if given that string).
+        s2_lanes.append({"query": s2_bulk_query_syntax(indication, chunk)})
+
+    plan = {
+        "clinicaltrials": ctg_lanes,
+        "pubmed": pm_lanes,
+        "europepmc": epmc_lanes,
+        "semanticscholar": s2_lanes,
     }
+
+    if use_recall_patterns:
+        plan = expand_search_plan(plan, coi, indication, criteria)
+
+    return plan
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -141,9 +191,17 @@ def unsupported_direction_node(state: DHTState) -> dict:
     )
 
 
-def make_identify_node(mcp: MCPDispatcher) -> Callable[[DHTState], dict]:
+def make_identify_node(
+    mcp: MCPDispatcher,
+    page_size: int = 1000,
+    total_cap_per_source: int = 5000,
+) -> Callable[[DHTState], dict]:
     def _node(state: DHTState) -> dict:
-        records, prisma = run_identify(state["search_plan"], mcp)
+        records, prisma = run_identify(
+            state["search_plan"], mcp,
+            page_size=page_size,
+            total_cap_per_source=total_cap_per_source,
+        )
         log.info("identify: %d records after dedup", len(records))
         return {
             "raw_records": {"type": "override", "value": records},
@@ -238,29 +296,37 @@ def build_graph(
     evidence_llm: EvidenceLLM | None = None,
     evidence_skill_path: Path = DEFAULT_SKILL_PATH,
     checkpointer=None,
+    page_size: int = 1000,
+    total_cap_per_source: int = 5000,
 ):
     """Compile the identify→screen→eligibility→evidence graph.
 
     Args:
         mcp: dispatcher used by both identify and eligibility.
-        screen_llm: cheap-model dispatcher for the screen node.
-        eligibility_llm: cheap-model dispatcher for the eligibility node.
-        evidence_llm: Sonnet-tier dispatcher for the evidence node. If None,
+        screen_llm: classifier dispatcher for the screen node — bounded
+             JSON-array output, thinking disabled. Build with
+             llm_client.make_lilly_classifier_dispatcher().
+        eligibility_llm: analytical dispatcher for the eligibility node.
+             This is now a re-adjudication gate, not a cheap pass-through
+             — build with llm_client.make_lilly_analytical_dispatcher().
+        evidence_llm: analytical dispatcher for the evidence node. If None,
              the evidence node is SKIPPED and the graph ends after
              eligibility — useful for a retrieval-only dry run, or if you
-             don't have the skill file staged yet.
+             don't have the skill file staged yet. Build with
+             llm_client.make_lilly_analytical_dispatcher().
         evidence_skill_path: path to dht-landscape-scout's SKILL.md. Must
              exist if evidence_llm is provided — see evidence.py's
              load_skill_prompt, which raises clearly if it's missing rather
              than silently running without the analytical framework.
         checkpointer: optional LangGraph checkpointer for resumable runs.
-
-    Returns the compiled graph (call `.invoke(initial_state)` on it).
     """
     builder = StateGraph(DHTState)
 
     builder.add_node("router", make_router_node())
-    builder.add_node("identify", make_identify_node(mcp))
+    builder.add_node(
+        "identify",
+        make_identify_node(mcp, page_size=page_size, total_cap_per_source=total_cap_per_source),
+    )
     builder.add_node("screen", make_screen_node(screen_llm))
     builder.add_node("eligibility", make_eligibility_node(mcp, eligibility_llm))
     builder.add_node("unsupported_direction", unsupported_direction_node)
@@ -285,9 +351,39 @@ def build_graph(
 
     return builder.compile(checkpointer=checkpointer)
 
+def build_graph_with_lilly_defaults(
+    mcp: MCPDispatcher,
+    evidence_skill_path: Path = DEFAULT_SKILL_PATH,
+    checkpointer=None,
+):
+    """build_graph() wired to llm_client's current model/effort defaults:
+    screen on the classifier dispatcher (Sonnet 5, thinking disabled),
+    eligibility and evidence both on the analytical dispatcher (Opus 4.8,
+    adaptive thinking, high effort, max_tokens=128k).
+
+    eligibility_llm and evidence_llm are two SEPARATE dispatcher instances
+    (not one shared callable) even though they're built the same way —
+    each call to make_lilly_analytical_dispatcher() is just a closure over
+    the same singleton client, so this costs nothing, and keeping them
+    separate means you can later swap one model out (e.g. drop eligibility
+    back to Sonnet 5 if Opus turns out to be overkill for re-adjudication)
+    without touching the other.
+
+    Use build_graph() directly instead of this if you want a different
+    model/effort combination than the current defaults.
+    """
+    return build_graph(
+        mcp=mcp,
+        screen_llm=make_lilly_classifier_dispatcher(),
+        eligibility_llm=make_lilly_analytical_dispatcher(),
+        evidence_llm=make_lilly_analytical_dispatcher(),
+        evidence_skill_path=evidence_skill_path,
+        checkpointer=checkpointer,
+    )
 
 __all__ = [
     "build_graph",
+    "build_graph_with_lilly_defaults",
     "default_search_plan",
     "make_router_node",
     "make_identify_node",

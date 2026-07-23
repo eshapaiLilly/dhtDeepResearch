@@ -44,9 +44,12 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 from collections import Counter
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from typing import Any, Callable, Iterable
+
 from criteria import EligibilityCriteria, ExclusionCode, get as get_criteria
 from state import Record
 
@@ -98,8 +101,20 @@ For each record you receive, output one JSON object with these keys:
 Rules:
 - If ANY exclusion criterion applies, exclude (choose the FIRST matching code).
 - If ALL inclusion criteria are satisfied, include.
-- If the abstract is missing or too thin to assess, exclude with code
-  "insufficient_metadata".
+- Each record's "source" field is either "clinicaltrials" or "pubmed" — these
+  carry fundamentally different metadata shapes, and "missing abstract" means
+  something different for each:
+    * source="clinicaltrials": these records NEVER carry a prose abstract —
+      that is normal for this source, not a sign of thin data. Judge these
+      from title + condition + intervention + intervention_type +
+      outcome_measures instead. Do NOT exclude a clinicaltrials record as
+      "insufficient_metadata" solely because its abstract field is empty —
+      only do so if title/condition/intervention/outcome_measures TOGETHER
+      give too little signal to assess the inclusion/exclusion criteria.
+    * source="pubmed": these records normally DO carry an abstract. If a
+      pubmed record's abstract is genuinely missing or too thin to assess
+      (and the title alone isn't enough), exclude with code
+      "insufficient_metadata".
 - Do NOT invent metadata not present in the record. If in doubt, exclude.
 - Return a JSON ARRAY of decision objects, one per input record, in the same
   order. No prose before or after. No markdown code fences.
@@ -153,6 +168,51 @@ def _strip_fences(text: str) -> str:
     return t.strip()
 
 
+_TRAILING_COMMA_RE = re.compile(r",(\s*[\]}])")
+
+
+def _fix_trailing_commas(text: str) -> str:
+    """Strip a trailing comma before a closing ] or } — a JSON5-ism the
+    model occasionally emits despite instructions, and one that a live run
+    hit twice, each time forcing an entire ~20-record batch into the
+    fault-tolerant fallback (exclude, insufficient_metadata) for a pure
+    formatting slip rather than an actual judgment problem. This is a
+    narrow, safe fix: it only removes a comma immediately before a closing
+    bracket/brace, so it can't silently change any value the model
+    actually returned."""
+    return _TRAILING_COMMA_RE.sub(r"\1", text)
+
+
+from typing import get_args
+
+_VALID_EXCLUSION_CODES = set(get_args(ExclusionCode))
+
+
+def _normalize_exclusion_code(code_raw: str | None, reason: str) -> tuple[str, str]:
+    """Validate exclusion_code against the known ExclusionCode set.
+
+    criteria.py's to_prompt_block() labels each exclusion criterion "E1",
+    "E2", "E3"... with the actual code in brackets (e.g. "E3
+    [wrong_study_type]: ..."). Observed in a real run: the model
+    occasionally echoes the LABEL ("E3") instead of the CODE
+    ("wrong_study_type") for a small fraction of records — harmless to the
+    include/exclude decision itself, but it silently pollutes the PRISMA
+    exclusion-reason tally with non-standard keys if not caught. Normalize
+    anything not in the known set to "insufficient_metadata" and keep the
+    raw value visible in the reason text rather than losing it.
+    """
+    if code_raw in _VALID_EXCLUSION_CODES:
+        return code_raw, reason
+    if code_raw:
+        log.warning(
+            "Unrecognized exclusion_code %r from model (expected one of %s); "
+            "normalizing to insufficient_metadata",
+            code_raw, sorted(_VALID_EXCLUSION_CODES),
+        )
+        return "insufficient_metadata", f"{reason} (raw model code: {code_raw})"
+    return "insufficient_metadata", reason
+
+
 def _parse_decisions(raw: str, batch: list[Record]) -> list[ScreenDecision]:
     """Parse Claude's JSON reply into ScreenDecisions.
 
@@ -171,7 +231,7 @@ def _parse_decisions(raw: str, batch: list[Record]) -> list[ScreenDecision]:
     }
 
     try:
-        payload = json.loads(_strip_fences(raw))
+        payload = json.loads(_fix_trailing_commas(_strip_fences(raw)))
     except json.JSONDecodeError as e:
         log.warning("Screen batch JSON parse failed: %s", e)
         return list(fallback.values())
@@ -196,11 +256,14 @@ def _parse_decisions(raw: str, batch: list[Record]) -> list[ScreenDecision]:
         # Guard: if excluded but no code, tag insufficient_metadata
         if not include and code is None:
             code = "insufficient_metadata"
+        reason_text = str(row.get("reason", ""))[:250]
+        if not include:
+            code, reason_text = _normalize_exclusion_code(code, reason_text)
         fallback[cid] = ScreenDecision(
             citation_id=cid,
             include=include,
             exclusion_code=code,
-            reason=str(row.get("reason", ""))[:250],
+            reason=reason_text,
         )
 
     # Preserve original batch order
@@ -226,6 +289,7 @@ def screen(
     llm: LLMDispatcher,
     *,
     batch_size: int = 20,
+    batch_workers: int = 4,
 ) -> tuple[list[Record], dict[str, Any]]:
     """Title/abstract screen a list of records against the COI's criteria.
 
@@ -249,12 +313,29 @@ def screen(
     all_decisions: list[ScreenDecision] = []
     reason_counts: Counter[str] = Counter()
 
-    for batch in _batches(records, batch_size):
+    def _run_batch(batch: list[Record]) -> tuple[list[Record], list[ScreenDecision]]:
+        """One batch's LLM call + parse. Pure w.r.t. shared state — returns
+        its results for the caller to aggregate serially, so the parallel
+        map has no data races. _parse_decisions is already fault-tolerant:
+        a malformed batch degrades to conservative excludes, it never
+        raises, so one bad batch can't poison the pool."""
         user_msg = _build_batch_user_message(criteria, batch)
         raw = llm(_SYSTEM_PROMPT, user_msg)
-        decisions = _parse_decisions(raw, batch)
+        return batch, _parse_decisions(raw, batch)
 
-        # Map decisions back to records
+    batches = list(_batches(records, batch_size))
+    # Batch LLM calls are independent network-bound work — the same reason
+    # enrich_all() in eligibility.py uses a pool. map() preserves input order
+    # in its output, so PRISMA-relevant ordering is unchanged vs. the old
+    # serial loop. Aggregation below stays single-threaded, so Counter /
+    # list mutation is race-free. Keep batch_workers modest: when the COI
+    # loop itself is parallelized (als_dryRun.py), total concurrent gateway
+    # calls = COI_workers * batch_workers — lower either if the gateway 429s.
+    workers = max(1, min(batch_workers, len(batches)))
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        results = list(pool.map(_run_batch, batches))
+
+    for batch, decisions in results:
         cid_to_record = {r.citation_id: r for r in batch}
         for d in decisions:
             all_decisions.append(d)
