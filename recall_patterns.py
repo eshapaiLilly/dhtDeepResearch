@@ -340,13 +340,22 @@ def recovery_lanes(
             # no OR to get wrong here, but routed through the same helper
             # as graph.py's multi-term lanes for one consistent, correct
             # code path rather than two slightly different ad-hoc ones.
-            s2.append({"query": s2_bulk_query_syntax(indication, [desc])})
+            # year + fieldsOfStudy prevent the 10M-hit ceiling rejection.
+            s2.append({
+                "query": s2_bulk_query_syntax(indication, [desc]),
+                "year": "2016-",
+                "fieldsOfStudy": "Medicine,Biology",
+            })
         if p.software_platform:
             for c in p.construct_terms:
                 # Construct-level PI recovery: no company name at all.
                 pubmed.append({"query": f'{indication} AND "{c}"'})
                 epmc.append({"query": f'"{c}" AND "{indication}"'})
-                s2.append({"query": s2_bulk_query_syntax(indication, [c])})
+                s2.append({
+                    "query": s2_bulk_query_syntax(indication, [c]),
+                    "year": "2016-",
+                    "fieldsOfStudy": "Medicine,Biology",
+                })
 
     if patterns:
         log.info(

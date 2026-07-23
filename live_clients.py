@@ -38,20 +38,25 @@ that many PMIDs back from a single esearch call with no retstart offset
 ever advancing — and then tried to efetch all of them in one comma-joined
 GET request, which is what produced a live 414 Request-URI Too Long.
 
-efetch batching (also fixed here)
-------------------------------------
-_pubmed_efetch previously joined ALL requested PMIDs into a single GET
-query string. That's fine for a couple dozen IDs, not for several hundred
-— GET URLs have practical length limits (~2000-8000 chars depending on
-the client/proxy/server in the chain; a Zscaler-fronted request is another
-place this can get truncated or rejected). Fixed two ways, both applied:
-  1. efetch now goes over POST, not GET — NCBI explicitly recommends POST
-     for any E-utilities call whose ID list makes the URL long, and POST
-     bodies don't have GET's practical length ceiling.
-  2. efetch also chunks into batches of _EFETCH_BATCH_SIZE regardless of
-     POST — so one oversized request/response/timeout can't lose an
-     entire page's worth of enrichment at once, and per-request payload
-     size stays predictable.
+efetch batching (GET + small chunks — do NOT switch this back to POST)
+----------------------------------------------------------------------
+_pubmed_efetch joins requested PMIDs into a GET query string, chunked at
+_EFETCH_BATCH_SIZE so no single URL gets long enough to trip a 414
+Request-URI Too Long (observed live from an ~400-ID call ≈ 3600+ chars).
+At the current batch size a chunk's URL is well under ~1000 chars — far
+below every practical client/proxy/server ceiling.
+
+IMPORTANT — why GET and not POST, even though NCBI "recommends POST" for
+long ID lists: this pipeline runs behind a Zscaler proxy that redirects/
+rewrites outbound requests. On a redirect, `requests` silently downgrades
+POST→GET and DISCARDS the form body — so a POST efetch arrives at NCBI
+with NO parameters at all, and efetch returns HTTP 400 "Mandatory
+parameter: db - is omitted". (esearch is unaffected because it's a GET:
+its params live in the URL query string, which survives a redirect.)
+GET + a chunk size small enough to never hit 414 sidesteps this entirely:
+the params ride in the URL where the proxy can't drop them. Keep it GET.
+Chunking also isolates faults — one bad chunk can't lose a whole page's
+enrichment — and keeps per-request payload size predictable.
 
 Rate limiting
 -------------
@@ -174,10 +179,13 @@ log.info(
     "found" if NCBI_API_KEY else "not set", _MIN_INTERVAL, 1.0 / _MIN_INTERVAL,
 )
 
-# NCBI-recommended safe batch size for efetch ID lists. Also fixed at POST
-# (see module docstring), so this cap is about predictable payload size and
-# fault isolation, not URL length — POST alone would already fix the 414.
-_EFETCH_BATCH_SIZE = 200
+# efetch ID-list batch size. efetch goes over GET (see module docstring:
+# POST bodies get dropped by the Zscaler redirect, producing a bogus
+# "Mandatory parameter: db - is omitted" 400), so this cap DOES govern URL
+# length. At 100 IDs a chunk's URL is ~1000 chars — comfortably under the
+# ~3600+ that tripped the original 414, with wide margin for any proxy in
+# the path. Also gives fault isolation: a bad chunk can't lose a whole page.
+_EFETCH_BATCH_SIZE = 100
 
 # NCBI esearch's own hard ceiling: retstart + retmax <= 10,000. Enforced
 # here defensively too, even though retrieval.py's _paginate_pubmed already
@@ -320,6 +328,28 @@ def _request_with_retry(
         if resp.status_code != 429:
             resp.raise_for_status()
             return resp
+
+        # Distinguish a TRUE rate-limit 429 (worth retrying) from Semantic
+        # Scholar's "too many hits" 429 (query matched >10M papers — retrying
+        # is pointless, the query itself must be narrowed). The latter comes
+        # back as JSON with an "error" key containing "too many hits".
+        if resp.status_code == 429:
+            try:
+                body = resp.json()
+                if isinstance(body, dict) and "error" in body:
+                    err_msg = body["error"]
+                    if "too many hits" in err_msg.lower():
+                        log.warning(
+                            "live_clients: S2 'too many hits' rejection (not a "
+                            "rate limit — retrying won't help): %s", err_msg,
+                        )
+                        # Return the response as-is; caller
+                        # (_semanticscholar_search) checks for "error" in the
+                        # parsed JSON and returns empty gracefully.
+                        return resp
+            except (ValueError, KeyError):
+                pass  # not JSON or unexpected shape — treat as normal 429
+
         if attempt == max_retries:
             resp.raise_for_status()  # exhausted retries — raise the 429
         wait = float(resp.headers.get("Retry-After", 2 ** attempt))
@@ -353,6 +383,13 @@ def _s2_get_with_retry(url: str, params: dict, timeout: int) -> requests.Respons
     contention, not misuse, and it usually clears within a few backoff
     cycles rather than being a persistent block, so it's worth a few more
     attempts than we'd give a well-behaved dedicated-quota host like NCBI.
+
+    IMPORTANT: distinguishes between TRUE rate-limit 429s (ambient contention,
+    worth retrying) and S2's "too many hits" 429 (query matched >10M papers,
+    retrying is pointless). The latter comes back as HTTP 429 with a JSON body
+    containing {"error": "Search returned too many hits ..."} — detected here
+    so _request_with_retry's retry loop doesn't burn all attempts on an
+    unresolvable condition.
     """
     headers = {"x-api-key": S2_API_KEY} if S2_API_KEY else None
     return _request_with_retry(
@@ -492,18 +529,20 @@ def _safe_int(x: Any) -> int | None:
 
 
 def _pubmed_efetch(pmids: list[str]) -> list[dict]:
-    """Batch fetch via POST, chunked at _EFETCH_BATCH_SIZE.
+    """Batch fetch via GET, chunked at _EFETCH_BATCH_SIZE.
 
-    Two changes from the previous version, both load-bearing:
-      - POST instead of GET: a comma-joined GET query string for a few
-        hundred PMIDs can exceed URL length limits somewhere in the
-        request chain (observed live: 414 Request-URI Too Long from an
-        ~400-ID GET call). E-utilities support POST for exactly this case
-        and it has no comparable length ceiling.
-      - Chunked at _EFETCH_BATCH_SIZE regardless of POST: keeps individual
-        request/response payloads predictable and means one failed chunk
-        doesn't lose an entire page's enrichment — each chunk that
-        succeeds is kept even if a later chunk raises.
+    GET, NOT POST — this is load-bearing in this environment. A POST body
+    is silently dropped when the Zscaler proxy redirects the request
+    (`requests` downgrades POST→GET on redirect and discards the form
+    body), so a POST efetch reaches NCBI with no `db` and comes back
+    HTTP 400 "Mandatory parameter: db - is omitted". Sending params in the
+    URL query string (GET) keeps them where the proxy can't drop them.
+
+    The only reason POST was ever considered is URL length (a several-
+    hundred-ID GET tripped a 414). _EFETCH_BATCH_SIZE is set small enough
+    (~1000-char URLs) that this never happens, so GET is strictly safer
+    here with no downside. Chunking also isolates faults: each chunk that
+    succeeds is kept even if a later chunk raises.
     """
     if not pmids:
         return []
@@ -513,7 +552,7 @@ def _pubmed_efetch(pmids: list[str]) -> list[dict]:
         params = {"db": "pubmed", "id": ",".join(batch), "retmode": "xml"}
         if NCBI_API_KEY:
             params["api_key"] = NCBI_API_KEY
-        resp = _post_with_retry(f"{EUTILS_BASE}/efetch.fcgi", params, timeout=60)
+        resp = _get_with_retry(f"{EUTILS_BASE}/efetch.fcgi", params, timeout=60)
         out.extend(_parse_pubmed_xml(resp.text))
     return out
 
@@ -611,6 +650,19 @@ def _semanticscholar_search(args: dict) -> dict:
     Uses its own throttle (_s2_throttle) and its own SSL-fallback path via
     _s2_get_with_retry — entirely independent of the EPMC/NCBI machinery,
     so an outage or cert issue on one host can't affect the other.
+
+    Filtering (year, fieldsOfStudy)
+    --------------------------------
+    Semantic Scholar's bulk search has a hard ceiling of 10 million matching
+    papers — queries broader than that are rejected with HTTP 429 and a body
+    like {"error":"Search returned too many hits (236709528 of 10000000)..."}.
+    This is NOT a rate limit; it's a result-set-too-large rejection that will
+    never resolve with retries. The fix is server-side narrowing via `year`
+    and `fieldsOfStudy` query parameters, both documented in S2's API:
+      - year: "2016-" restricts to 2016-onward (matches GLOBAL_INCLUSION).
+      - fieldsOfStudy: "Medicine,Biology" restricts to biomedical papers.
+    These are passed by the caller (graph.py / recall_patterns.py) via args,
+    with sensible defaults here as a safety net.
     """
     params = {
         "query": args["query"],
@@ -618,8 +670,39 @@ def _semanticscholar_search(args: dict) -> dict:
     }
     if args.get("token"):
         params["token"] = args["token"]
+    # Server-side filters to keep result count under S2's 10M ceiling.
+    # Callers should pass these explicitly; defaults here are a safety net
+    # that matches our pipeline's global inclusion criteria (2016+, biomedical).
+    if args.get("year"):
+        params["year"] = args["year"]
+    else:
+        params["year"] = "2016-"
+    if args.get("fieldsOfStudy"):
+        params["fieldsOfStudy"] = args["fieldsOfStudy"]
+    else:
+        params["fieldsOfStudy"] = "Medicine,Biology"
+    if args.get("publicationTypes"):
+        params["publicationTypes"] = args["publicationTypes"]
+    if args.get("minCitationCount"):
+        params["minCitationCount"] = args["minCitationCount"]
+
     resp = _s2_get_with_retry(f"{S2_BASE}/paper/search/bulk", params, timeout=30)
     data = resp.json()
+
+    # Detect the "too many hits" error — S2 returns this as a 200 with an
+    # "error" key (or sometimes a 429 whose body is JSON with "error") when
+    # the query matches more than 10M papers. This is NOT a rate limit and
+    # retrying won't help — the query itself must be narrower. Log and
+    # return empty so the pipeline continues with other sources.
+    if "error" in data:
+        log.warning(
+            "live_clients: Semantic Scholar rejected query as too broad: %s "
+            "(query was: %s, params: %s). Returning empty — other sources "
+            "still cover this lane.",
+            data["error"], args.get("query", ""), params,
+        )
+        return {"data": [], "total": 0, "token": None}
+
     return {
         "data": data.get("data", []) or [],
         "total": data.get("total", 0),

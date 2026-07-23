@@ -117,7 +117,14 @@ def default_search_plan(
         # those DO treat "OR"/"AND" as real boolean operators in their own
         # query grammars; S2 bulk search does not, and would search for
         # the literal word "or" instead if given that string).
-        s2_lanes.append({"query": s2_bulk_query_syntax(indication, chunk)})
+        # year + fieldsOfStudy narrow results server-side to stay under S2's
+        # 10M-hit ceiling — without these, short indications like "ALS"
+        # match 200M+ papers and trigger an immediate rejection.
+        s2_lanes.append({
+            "query": s2_bulk_query_syntax(indication, chunk),
+            "year": "2016-",
+            "fieldsOfStudy": "Medicine,Biology",
+        })
 
     plan = {
         "clinicaltrials": ctg_lanes,
