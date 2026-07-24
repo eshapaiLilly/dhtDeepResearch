@@ -1,0 +1,1004 @@
+{
+  "indication": "ALS",
+  "corpus_size": 4490,
+  "prisma": {
+    "identification_by_source": {
+      "clinicaltrials": 1138,
+      "pubmed": 3497
+    },
+    "identification_total": 4635,
+    "identification_capped_by_source": {
+      "clinicaltrials": false,
+      "pubmed": true
+    },
+    "after_dedup": 4490
+  },
+  "candidates": [
+    {
+      "coi": "overall_functional_status",
+      "label": "Overall Functional Status",
+      "clinical_rationale": "ALS causes progressive loss of function across multiple domains; composite functional scales are the most widely used primary endpoints to capture disease progression holistically.",
+      "literature_vocabulary": [
+        "ALSFRS-R",
+        "ALS Functional Rating Scale-Revised",
+        "ALSFRS-R total score",
+        "ALSFRS-R sub-domain scores",
+        "Rasch Overall ALS Disability Scale (ROADS)",
+        "functional decline",
+        "disease progression",
+        "King's Clinical Severity Staging",
+        "functional status",
+        "Combined Assessment of Function and Survival (CAFS)",
+        "Norris Scale Score"
+      ],
+      "dht_precedent": "digital technologies for physical impairment measurement (NCT06820008)",
+      "evidence_citations": [
+        "NCT07396818",
+        "NCT07325591",
+        "NCT07322003",
+        "NCT07174492",
+        "NCT06726577",
+        "NCT07082192",
+        "NCT06973629",
+        "NCT07006571",
+        "NCT07067229",
+        "NCT06649955",
+        "NCT07142291",
+        "NCT06126315",
+        "NCT07138014",
+        "NCT07414212",
+        "NCT07636538",
+        "NCT07407725"
+      ]
+    },
+    {
+      "coi": "respiratory_function",
+      "label": "Respiratory Function",
+      "clinical_rationale": "Respiratory failure from progressive diaphragm and accessory muscle weakness is the primary cause of death in ALS; respiratory measures serve as key efficacy and survival surrogate endpoints.",
+      "literature_vocabulary": [
+        "slow vital capacity (SVC)",
+        "forced vital capacity (FVC)",
+        "percent predicted FVC",
+        "maximal inspiratory pressure (MIP)",
+        "maximal expiratory pressure (MEP)",
+        "cough peak flow (CPF)",
+        "lung insufflation capacity (LIC)",
+        "maximum insufflation capacity (MIC)",
+        "sniff nasal inspiratory pressure (SNIP)",
+        "transcutaneous carbon dioxide (TcCO2)",
+        "oxygen saturation",
+        "spirometry",
+        "respiratory function",
+        "peak inspiratory flow rate (PIFR)",
+        "respiratory insufficiency",
+        "diaphragmatic excursion",
+        "diaphragmatic thickening",
+        "oxygenation index",
+        "lung volumes",
+        "arterial blood gas (PaO2, PaCO2)"
+      ],
+      "dht_precedent": "SleepImage wearable for detecting respiratory failure (NCT07502677); ExSpiron respiratory volume monitor (NCT04089696); nocturnal pulse oximetry (NCT07413718)",
+      "evidence_citations": [
+        "NCT07396818",
+        "NCT07410806",
+        "NCT07071935",
+        "NCT07257302",
+        "NCT07161999",
+        "NCT07606235",
+        "NCT06726577",
+        "NCT07082192",
+        "NCT07706270",
+        "NCT06841341",
+        "NCT07413718",
+        "NCT07502677",
+        "NCT04089696",
+        "NCT06719947",
+        "NCT05297487",
+        "NCT07142291",
+        "NCT07170865",
+        "NCT06849609",
+        "NCT06910384"
+      ]
+    },
+    {
+      "coi": "speech_function",
+      "label": "Speech Function",
+      "clinical_rationale": "Bulbar motor neuron degeneration impairs speech production, making quantitative speech measures sensitive indicators of disease progression in bulbar-onset and generalized ALS.",
+      "literature_vocabulary": [
+        "speaking rate",
+        "oral speaking rate",
+        "intelligibility",
+        "maximum phonation time",
+        "listener effort",
+        "formant frequencies",
+        "duration of speech sounds",
+        "syntactic properties",
+        "pragmatic properties",
+        "quantitative speech assessment",
+        "digital speech markers",
+        "bulbar subdomain of ALSFRS-R",
+        "communication"
+      ],
+      "dht_precedent": "digital speech markers and quantitative speech assessment (NCT07341334, NCT07322003)",
+      "evidence_citations": [
+        "NCT07341334",
+        "NCT07322003",
+        "NCT07589764",
+        "NCT06819124",
+        "NCT06828523",
+        "NCT06126315"
+      ]
+    },
+    {
+      "coi": "swallowing_function",
+      "label": "Swallowing and Oral Motor Function",
+      "clinical_rationale": "Progressive bulbar weakness impairs swallowing, leading to aspiration risk, malnutrition, and need for gastrostomy; swallowing measures track bulbar disease progression.",
+      "literature_vocabulary": [
+        "swallowing frequency",
+        "urge-to-swallow",
+        "videofluoroscopic swallowing evaluation",
+        "fiberoptic endoscopic evaluation of swallowing (FEES)",
+        "lingual pressure",
+        "Test of Mastication and Swallowing Solids (TOMASS)",
+        "EAT-10",
+        "jaw range of motion",
+        "mastication",
+        "oral hygiene",
+        "time to gastrostomy"
+      ],
+      "dht_precedent": "TongueMeter device for lingual pressure (NCT07295990)",
+      "evidence_citations": [
+        "NCT07606235",
+        "NCT07295990",
+        "NCT07187388",
+        "NCT06126315",
+        "NCT07414212"
+      ]
+    },
+    {
+      "coi": "muscle_strength",
+      "label": "Muscle Strength",
+      "clinical_rationale": "Progressive motor neuron loss causes muscle weakness, the cardinal feature of ALS; quantitative strength measures capture the rate of lower motor neuron degeneration across body regions.",
+      "literature_vocabulary": [
+        "handheld dynamometry (HHD)",
+        "grip strength",
+        "pinch strength",
+        "finger tip pinch",
+        "palmar pinch",
+        "key pinch",
+        "MRC scale",
+        "manual muscle test (MMT)",
+        "Accurate Test of Limb Isometric Strength (ATLIS)",
+        "HHD megascore",
+        "muscle strength"
+      ],
+      "dht_precedent": "handheld dynamometry devices (NCT06849609, NCT02478450)",
+      "evidence_citations": [
+        "NCT06849609",
+        "NCT07298486",
+        "NCT02478450",
+        "NCT06726577",
+        "NCT07067229",
+        "NCT06681610",
+        "NCT04220190",
+        "NCT06527222",
+        "NCT07077668",
+        "NCT07414212",
+        "NCT06973629",
+        "NCT06649955"
+      ]
+    },
+    {
+      "coi": "quality_of_life",
+      "label": "Quality of Life",
+      "clinical_rationale": "ALS profoundly impacts all dimensions of quality of life; patient-reported QoL scales capture the subjective burden of progressive disability beyond clinician-observed function.",
+      "literature_vocabulary": [
+        "ALSAQ-40",
+        "ALS Assessment Questionnaire",
+        "ALS-Specific Quality of Life (ALSSQOL)",
+        "ALSSQOL-SF",
+        "EuroQol-5D (EQ-5D)",
+        "EQ-5D-5L",
+        "WHOQOL-BREF",
+        "individual quality of life",
+        "health-related quality of life",
+        "physical mobility",
+        "ADL/independence",
+        "eating and drinking",
+        "emotional reactions"
+      ],
+      "dht_precedent": "",
+      "evidence_citations": [
+        "NCT02988297",
+        "NCT07454733",
+        "NCT07325591",
+        "NCT07174492",
+        "NCT06126315",
+        "NCT07413718",
+        "NCT07006571",
+        "NCT06719947",
+        "NCT07473765",
+        "NCT07298486",
+        "NCT07082192",
+        "NCT06877143",
+        "NCT07618585",
+        "NCT02478450"
+      ]
+    },
+    {
+      "coi": "cognitive_function",
+      "label": "Cognitive and Behavioral Function",
+      "clinical_rationale": "Up to 50% of ALS patients develop cognitive or behavioral impairment on the ALS-FTD spectrum; monitoring cognitive status informs prognosis and trial stratification.",
+      "literature_vocabulary": [
+        "Edinburgh Cognitive and Behavioural ALS Screen (ECAS)",
+        "Montreal Cognitive Assessment (MoCA)",
+        "neuropsychological phenotyping",
+        "cognitive and behavioral profile",
+        "MMSE",
+        "Frontal Assessment Battery (FAB)",
+        "Trail Making Test",
+        "Stroop Test",
+        "Rey's 15-word test",
+        "semantic fluency",
+        "phonemic fluency"
+      ],
+      "dht_precedent": "",
+      "evidence_citations": [
+        "NCT07325591",
+        "NCT07407725",
+        "NCT06126315",
+        "NCT06903286",
+        "NCT06607900",
+        "NCT06875739",
+        "NCT07175935",
+        "NCT07312240",
+        "NCT06992596"
+      ]
+    },
+    {
+      "coi": "survival",
+      "label": "Survival",
+      "clinical_rationale": "ALS is uniformly fatal with median survival of 3-5 years; overall survival and time to permanent ventilation/tracheostomy are the most definitive efficacy endpoints.",
+      "literature_vocabulary": [
+        "overall survival",
+        "tracheostomy-free survival",
+        "ventilation-free survival",
+        "time to death or permanent ventilation",
+        "time to permanent assisted ventilation (PAV)",
+        "time to tracheostomy or death",
+        "survival adjusted for mortality",
+        "progression free survival"
+      ],
+      "dht_precedent": "",
+      "evidence_citations": [
+        "NCT07410806",
+        "NCT06513546",
+        "NCT07571486",
+        "NCT07706270",
+        "NCT07082192",
+        "NCT07414212",
+        "NCT06877143",
+        "NCT07257302",
+        "NCT06126315",
+        "NCT06849609",
+        "NCT07322003",
+        "NCT07142291"
+      ]
+    },
+    {
+      "coi": "physical_mobility",
+      "label": "Physical Mobility and Gait",
+      "clinical_rationale": "Lower extremity weakness and spasticity progressively impair walking, balance, and mobility, representing major milestones of disability in ALS.",
+      "literature_vocabulary": [
+        "walking capacity",
+        "2-Minute Walking Test",
+        "Time Up and Go Test",
+        "gait",
+        "postural gait disorders",
+        "climbing stairs",
+        "timed functional tests",
+        "broad jump",
+        "multidirectional lunge test",
+        "walking scale",
+        "trunk control"
+      ],
+      "dht_precedent": "digital technologies for physical impairment measurement (NCT06820008); gait instrumentation (NCT06819358)",
+      "evidence_citations": [
+        "NCT05860244",
+        "NCT06881979",
+        "NCT06819358",
+        "NCT07341984",
+        "NCT07478172",
+        "NCT06820008",
+        "NCT07292545"
+      ]
+    },
+    {
+      "coi": "upper_limb_function",
+      "label": "Upper Limb Function and Dexterity",
+      "clinical_rationale": "Loss of hand dexterity and arm function compromises self-care, eating, writing, and device use; integrated upper-limb measures capture coordination beyond raw strength.",
+      "literature_vocabulary": [
+        "9 Hole Peg test",
+        "hand function",
+        "Quick Disabilities of Arm Shoulder and Hand (QuickDASH)",
+        "Fugl-Meyer Assessment",
+        "ABILHAND Scale",
+        "Action Research Arm Test (ARAT)",
+        "fine motor control",
+        "functional eating status"
+      ],
+      "dht_precedent": "robotic glove for grip and fine motor assessment (NCT07298486); auto-calibrating upper limb rehabilitation system (NCT07636538)",
+      "evidence_citations": [
+        "NCT07298486",
+        "NCT07636538",
+        "NCT07067229",
+        "NCT07151950"
+      ]
+    },
+    {
+      "coi": "sleep_quality",
+      "label": "Sleep Quality",
+      "clinical_rationale": "Nocturnal hypoventilation, disrupted sleep architecture, and daytime somnolence are early features of respiratory decline in ALS, impacting quality of life and indicating need for ventilatory support.",
+      "literature_vocabulary": [
+        "Epworth Sleepiness Scale (ESS)",
+        "Karolinska Sleepiness Scale (KSS)",
+        "quality of sleep",
+        "daytime sleepiness",
+        "nocturnal pulse oximetry",
+        "sleep quality",
+        "hypoxic burden",
+        "T90",
+        "pulse rate variability"
+      ],
+      "dht_precedent": "SleepImage wearable for respiratory-sleep monitoring (NCT07502677); nocturnal pulse oximetry (NCT07413718)",
+      "evidence_citations": [
+        "NCT07071935",
+        "NCT06719947",
+        "NCT06841341",
+        "NCT07502677",
+        "NCT07413718"
+      ]
+    },
+    {
+      "coi": "psychological_distress",
+      "label": "Psychological Distress (Depression and Anxiety)",
+      "clinical_rationale": "Depression, anxiety, hopelessness, and demoralization are common in ALS patients and caregivers, affecting treatment engagement, quality of life, and potentially disease course.",
+      "literature_vocabulary": [
+        "Hospital Anxiety and Depression Scale (HADS)",
+        "Montgomery-Asberg Depression Rating Scale (MADRS)",
+        "ALS Depression Inventory",
+        "Patient Health Questionnaire-9 (PHQ-9)",
+        "Generalized Anxiety Disorder-7 (GAD-7)",
+        "State Trait Inventory for Cognitive and Somatic Anxiety (STICSA)",
+        "Beck Hopelessness Scale",
+        "Hamilton Depression Rating Scale (HAMD-17)",
+        "demoralization",
+        "Columbia-Suicide Severity Rating Scale"
+      ],
+      "dht_precedent": "",
+      "evidence_citations": [
+        "NCT06656702",
+        "NCT07473765",
+        "NCT06968468",
+        "NCT07082192",
+        "NCT06782724",
+        "NCT06992596",
+        "NCT07127172",
+        "NCT06841341",
+        "NCT07093268"
+      ]
+    },
+    {
+      "coi": "fatigue",
+      "label": "Fatigue",
+      "clinical_rationale": "Fatigue is a prevalent and disabling symptom in ALS that is distinct from weakness, limiting activity tolerance and quality of life.",
+      "literature_vocabulary": [
+        "Fatigue Severity Scale",
+        "perceived fatigue",
+        "impact of fatigue on quality of life",
+        "fatigue"
+      ],
+      "dht_precedent": "",
+      "evidence_citations": [
+        "NCT06881979",
+        "NCT06719947",
+        "NCT07178574",
+        "NCT07478172",
+        "NCT05860244"
+      ]
+    },
+    {
+      "coi": "pain",
+      "label": "Pain",
+      "clinical_rationale": "Pain in ALS arises from immobility, spasticity, cramps, and musculoskeletal changes; it is underrecognized but significantly affects quality of life.",
+      "literature_vocabulary": [
+        "Numerical Rating Scale for Pain",
+        "Visual Analog Scale (VAS)",
+        "Neuropathic Pain Scale (NPS)",
+        "facial pain",
+        "severity of pain and impact of pain on daily life"
+      ],
+      "dht_precedent": "",
+      "evidence_citations": [
+        "NCT07187388",
+        "NCT02478450",
+        "NCT07093268",
+        "NCT07478172"
+      ]
+    },
+    {
+      "coi": "muscle_cramps",
+      "label": "Muscle Cramps",
+      "clinical_rationale": "Muscle cramps are a frequent, distressing symptom in ALS caused by motor neuron hyperexcitability; they impair sleep and quality of life and represent a modifiable symptom target.",
+      "literature_vocabulary": [
+        "muscle cramp frequency",
+        "muscle cramp severity",
+        "muscle cramps impact on quality of life"
+      ],
+      "dht_precedent": "",
+      "evidence_citations": [
+        "NCT06527222"
+      ]
+    },
+    {
+      "coi": "nutritional_status",
+      "label": "Nutritional Status and Body Composition",
+      "clinical_rationale": "Weight loss and malnutrition are independent predictors of faster ALS progression and mortality; maintaining energy balance and body composition is a therapeutic goal.",
+      "literature_vocabulary": [
+        "body weight",
+        "BMI",
+        "body mass index",
+        "fat mass",
+        "muscle mass",
+        "body cell mass",
+        "lean body mass",
+        "resting energy expenditure",
+        "appetite",
+        "eating habits",
+        "Third Lumbar Skeletal Muscle Index (L3-SMI)",
+        "frailty",
+        "dietary intake",
+        "gastrointestinal symptoms"
+      ],
+      "dht_precedent": "",
+      "evidence_citations": [
+        "NCT07606235",
+        "NCT06877143",
+        "NCT06765499",
+        "NCT06608004",
+        "NCT06609213",
+        "NCT07233148"
+      ]
+    },
+    {
+      "coi": "communication_ability",
+      "label": "Communication Ability (Assistive Technology / BCI)",
+      "clinical_rationale": "Progressive loss of speech and limb motor control leads to locked-in states; brain-computer interfaces and assistive technologies aim to restore communication throughput as a functional endpoint.",
+      "literature_vocabulary": [
+        "words per minute (WPM)",
+        "phrases per minute",
+        "information transfer rate (ITR)",
+        "BCI control",
+        "cursor task performance",
+        "system usability",
+        "assistive technology",
+        "eye tracker",
+        "speech BCI",
+        "neural decoding"
+      ],
+      "dht_precedent": "implantable BCI (Neuralink N1, Synchron Stentrode, Paradromics Connexus); non-invasive EEG BCI (Cognixion ONE); eye tracking; ECoG-based speech decoding",
+      "evidence_citations": [
+        "NCT07357428",
+        "NCT07446114",
+        "NCT07543367",
+        "NCT06810219",
+        "NCT07209943",
+        "NCT07521930",
+        "NCT07407725",
+        "NCT07224256",
+        "NCT06992596",
+        "NCT07127172",
+        "NCT06429735",
+        "NCT05470478",
+        "NCT07698496",
+        "NCT07533903",
+        "NCT06829212",
+        "NCT06700304",
+        "NCT07460037"
+      ]
+    },
+    {
+      "coi": "caregiver_burden",
+      "label": "Caregiver Burden",
+      "clinical_rationale": "ALS caregivers experience significant physical, emotional, and financial strain; caregiver well-being affects patient outcomes and is a recognized endpoint in supportive care trials.",
+      "literature_vocabulary": [
+        "Burden Scale for Family Caregivers (BSFC)",
+        "Caregiver Burden Inventory (CBI)",
+        "Preparedness for Caregiving Scale",
+        "Dyadic Coping Inventory",
+        "caregiver burden",
+        "multidimensional social support"
+      ],
+      "dht_precedent": "",
+      "evidence_citations": [
+        "NCT07454733",
+        "NCT07006571",
+        "NCT06968468",
+        "NCT06829212"
+      ]
+    },
+    {
+      "coi": "spasticity",
+      "label": "Spasticity and Upper Motor Neuron Signs",
+      "clinical_rationale": "Upper motor neuron degeneration in ALS produces spasticity that compounds weakness, impairs movement, and causes discomfort; quantifying UMN burden aids phenotyping and treatment targeting.",
+      "literature_vocabulary": [
+        "Modified Ashworth Scale (MAS)",
+        "Ashworth Spasticity Scale",
+        "Penn Upper Motor Neuron Score (PUMNS)",
+        "Penn UMN Score"
+      ],
+      "dht_precedent": "",
+      "evidence_citations": [
+        "NCT07636538",
+        "NCT02478450",
+        "NCT07312240",
+        "NCT07067229"
+      ]
+    },
+    {
+      "coi": "dyspnea",
+      "label": "Dyspnea",
+      "clinical_rationale": "Subjective breathlessness in ALS signals respiratory muscle weakness and correlates with ventilatory need; it is an important patient-reported respiratory symptom distinct from objective lung function.",
+      "literature_vocabulary": [
+        "Modified Borg Dyspnea Scale",
+        "dyspnea",
+        "global rate of change of breathing",
+        "Borg RPE"
+      ],
+      "dht_precedent": "",
+      "evidence_citations": [
+        "NCT06719947",
+        "NCT07178574",
+        "NCT07071935",
+        "NCT04089696"
+      ]
+    },
+    {
+      "coi": "muscle_composition",
+      "label": "Muscle Composition and Integrity",
+      "clinical_rationale": "Progressive denervation causes detectable changes in muscle impedance, volume, and architecture; imaging and bioimpedance measures provide objective, quantitative biomarkers of disease burden.",
+      "literature_vocabulary": [
+        "Electrical Impedance Myography (EIM)",
+        "muscle volume",
+        "thigh muscle volume",
+        "diaphragmatic excursion",
+        "diaphragmatic thickening",
+        "diaphragm diameter",
+        "phrenic nerve cross-sectional area",
+        "muscle ultrasound"
+      ],
+      "dht_precedent": "portable EIM device (Myolex mScan) as biomarker (NCT06491732); ExSpiron respiratory volume monitor (NCT04089696)",
+      "evidence_citations": [
+        "NCT06491732",
+        "NCT02478450",
+        "NCT05860244",
+        "NCT07170865",
+        "NCT06841341"
+      ]
+    },
+    {
+      "coi": "neurophysiological_integrity",
+      "label": "Neurophysiological Integrity",
+      "clinical_rationale": "Electrophysiological measures of motor neuron and axonal function (CMAP, MUNE, cortical excitability) provide objective quantification of upper and lower motor neuron degeneration and therapeutic target engagement.",
+      "literature_vocabulary": [
+        "compound muscle action potential (CMAP)",
+        "motor unit number estimation (MUNE)",
+        "motor unit number index (MUNIX)",
+        "motor evoked potential (MEP)",
+        "cortical silent period (CSP)",
+        "short intracortical inhibition (SICI)",
+        "intra-cortical facilitation (ICF)",
+        "resting motor threshold",
+        "threshold tracking nerve conduction",
+        "central motor conduction time (CMCT)",
+        "Neurophysiological Index (NI)",
+        "motor unit firing rates",
+        "denervation score (EMG)",
+        "electromyographic activity"
+      ],
+      "dht_precedent": "decomposition electromyography (dEMG) for motor unit analysis (NCT07478172)",
+      "evidence_citations": [
+        "NCT07067229",
+        "NCT06726577",
+        "NCT06681610",
+        "NCT07478172",
+        "NCT06649955",
+        "NCT06607900",
+        "NCT07312240",
+        "NCT06719947",
+        "NCT06681610"
+      ]
+    }
+  ],
+  "scores": [
+    {
+      "coi": "overall_functional_status",
+      "clinical_importance": 5,
+      "clinical_importance_rationale": "ALSFRS-R is the most widely used primary endpoint across ALS trials, appearing in nearly every Phase 2/3 study in the corpus as the primary or co-primary outcome measure (e.g., NCT07325591, NCT07174492, NCT07082192, NCT07322003). ROADS and CAFS also appear as key secondary endpoints, confirming composite functional status is central to disease progression measurement [NCT07325591]",
+      "digital_measurability": 3,
+      "digital_measurability_rationale": "NCT06820008 is specifically designed to explore 'Use of Digital Technologies' for measurement of physical impairment in ALS, with System Usability Scale and 12-month follow-up as outcomes. However, the ALSFRS-R itself remains primarily a clinician/patient-reported scale without validated sensor-based replacement yet [NCT06820008]",
+      "quadrant": "core_and_measurable",
+      "recommendation": "recommend",
+      "evidence_citations": [
+        "NCT07325591",
+        "NCT07174492",
+        "NCT07082192",
+        "NCT07322003",
+        "NCT06820008",
+        "NCT06726577"
+      ]
+    },
+    {
+      "coi": "respiratory_function",
+      "clinical_importance": 5,
+      "clinical_importance_rationale": "Respiratory measures (SVC, FVC, MIP) appear as primary or key secondary endpoints across numerous trials. Respiratory failure drives mortality in ALS, with time to permanent ventilation used as a survival surrogate (NCT07082192, NCT07410806). Multiple Phase 3 trials use %FVC as co-primary endpoint [NCT07410806]",
+      "digital_measurability": 4,
+      "digital_measurability_rationale": "Strong DHT precedent: NCT07502677 validates SleepImage wearable technology for detecting respiratory failure in ALS with outcomes including hypoxic burden, T90, and pulse rate variability. NCT04089696 validates ExSpiron respiratory volume monitor against pneumotachometer. NCT07413718 uses nocturnal pulse oximetry as an endpoint [NCT07502677]",
+      "quadrant": "core_and_measurable",
+      "recommendation": "recommend",
+      "evidence_citations": [
+        "NCT07502677",
+        "NCT04089696",
+        "NCT07413718",
+        "NCT07410806",
+        "NCT07082192",
+        "NCT07071935",
+        "NCT07257302"
+      ]
+    },
+    {
+      "coi": "speech_function",
+      "clinical_importance": 4,
+      "clinical_importance_rationale": "Quantitative speech assessment is a secondary endpoint in the Phase 3 pridopidine trial (NCT07322003) measuring speaking rate and intelligibility. Bulbar subdomain of ALSFRS-R is separately tracked. Speech decline is a sensitive indicator of bulbar disease progression [NCT07322003]",
+      "digital_measurability": 4,
+      "digital_measurability_rationale": "NCT07341334 specifically studies 'Digital Speech Markers for Monitoring ALS' with outcomes including oral speaking rate, maximum phonation time, and listener effort using digital recording/analysis. NCT07322003 uses 'quantitative speech assessment in the clinic' as a Phase 3 endpoint. NCT06819124 examines formant frequencies and duration of speech sounds digitally [NCT07341334]",
+      "quadrant": "core_and_measurable",
+      "recommendation": "recommend",
+      "evidence_citations": [
+        "NCT07341334",
+        "NCT07322003",
+        "NCT07589764",
+        "NCT06819124",
+        "NCT06828523"
+      ]
+    },
+    {
+      "coi": "swallowing_function",
+      "clinical_importance": 4,
+      "clinical_importance_rationale": "Swallowing measures track bulbar disease progression. Time to gastrostomy is used as a milestone endpoint (NCT07414212, NCT06126315). NCT07606235 specifically targets swallowing frequency and urge-to-swallow as primary outcomes. Aspiration risk and nutritional compromise make this clinically critical [NCT07606235]",
+      "digital_measurability": 2,
+      "digital_measurability_rationale": "NCT07295990 uses the TongueMeter device for measuring maximum anterior isometric lingual pressure, representing a device-based measurement approach. However, this is a single point-of-care device for one aspect of swallowing; no comprehensive wearable/remote digital swallowing monitoring approach is evidenced in the corpus [NCT07295990]",
+      "quadrant": "core_not_yet_measurable",
+      "recommendation": "white_space",
+      "evidence_citations": [
+        "NCT07606235",
+        "NCT07295990",
+        "NCT07187388",
+        "NCT06126315",
+        "NCT07414212"
+      ]
+    },
+    {
+      "coi": "muscle_strength",
+      "clinical_importance": 5,
+      "clinical_importance_rationale": "Muscle strength is the cardinal feature of ALS, measured in nearly every interventional trial. HHD megascore is a primary endpoint (NCT06849609), ATLIS appears as key secondary (NCT06649955), and grip strength is tracked extensively (NCT07298486, NCT04220190). Multiple Phase 3 trials include quantitative strength measures [NCT06849609]",
+      "digital_measurability": 3,
+      "digital_measurability_rationale": "Handheld dynamometry devices produce digital output and are used across multiple trials (NCT06849609, NCT02478450, NCT04220190). Grip dynamometers (NCT07298486) and ATLIS systems (NCT06649955) are device-based quantitative measurements. However, these are primarily clinic-based measurement devices rather than remote/wearable DHTs [NCT06849609]",
+      "quadrant": "core_and_measurable",
+      "recommendation": "recommend",
+      "evidence_citations": [
+        "NCT06849609",
+        "NCT07298486",
+        "NCT02478450",
+        "NCT06649955",
+        "NCT06726577",
+        "NCT07067229"
+      ]
+    },
+    {
+      "coi": "quality_of_life",
+      "clinical_importance": 4,
+      "clinical_importance_rationale": "QoL measures appear as secondary endpoints in major Phase 2/3 trials: ALSAQ-40 (NCT07325591, NCT07082192, NCT06126315), EQ-5D-5L (NCT07067229), ALSSQOL-SF (NCT07473765). The Phase 3 masitinib trial includes QoL as a co-primary endpoint (NCT07174492), confirming regulatory importance [NCT07174492]",
+      "digital_measurability": 1,
+      "digital_measurability_rationale": "No DHT/sensor precedent is evidenced in the corpus for measuring quality of life. All QoL assessments (ALSAQ-40, EQ-5D, ALSSQOL) are traditional patient-reported outcome questionnaires administered on paper or electronically, with no wearable or sensor-based approach identified [NCT02988297]",
+      "quadrant": "core_not_yet_measurable",
+      "recommendation": "white_space",
+      "evidence_citations": [
+        "NCT07174492",
+        "NCT07325591",
+        "NCT07082192",
+        "NCT06126315",
+        "NCT02988297",
+        "NCT07454733"
+      ]
+    },
+    {
+      "coi": "cognitive_function",
+      "clinical_importance": 4,
+      "clinical_importance_rationale": "ECAS is included as a secondary endpoint in the Phase 2/3 tazbentetol trial (NCT07325591) and multiple other studies (NCT07407725, NCT06126315). Neuropsychological phenotyping is a primary outcome in NCT07312240. Cognitive impairment affects up to 50% of ALS patients and informs prognosis [NCT07325591]",
+      "digital_measurability": 1,
+      "digital_measurability_rationale": "No DHT/sensor precedent for cognitive measurement in ALS is evidenced in the corpus. All cognitive assessments (ECAS, MoCA, MMSE, FAB, Trail Making) are traditional neuropsychological tests administered in clinical settings without wearable or sensor-based digital alternatives demonstrated [NCT06126315]",
+      "quadrant": "core_not_yet_measurable",
+      "recommendation": "white_space",
+      "evidence_citations": [
+        "NCT07325591",
+        "NCT07407725",
+        "NCT06126315",
+        "NCT07312240",
+        "NCT06875739"
+      ]
+    },
+    {
+      "coi": "survival",
+      "clinical_importance": 5,
+      "clinical_importance_rationale": "Overall survival is the most definitive endpoint in ALS. It appears as primary or co-primary outcome in Phase 3 trials (NCT07322003: overall survival at Week 96; NCT07082192: time to PAV/death). Tracheostomy-free survival is used in multiple trials (NCT07071935, NCT07257302). CAFS combines function and survival [NCT07322003]",
+      "digital_measurability": 1,
+      "digital_measurability_rationale": "No DHT/sensor precedent for measuring survival exists in the corpus. Survival is tracked through clinical records, death certificates, and study visits. While wearables could theoretically detect vital status, no such application is demonstrated in ALS trials [NCT07410806]",
+      "quadrant": "core_not_yet_measurable",
+      "recommendation": "white_space",
+      "evidence_citations": [
+        "NCT07322003",
+        "NCT07410806",
+        "NCT07082192",
+        "NCT07571486",
+        "NCT07257302",
+        "NCT07142291"
+      ]
+    },
+    {
+      "coi": "physical_mobility",
+      "clinical_importance": 4,
+      "clinical_importance_rationale": "Walking capacity and mobility are tracked through timed functional tests (NCT07478172), 2-Minute Walking Test (NCT06881979), Time Up and Go (NCT06881979), and the ALSFRS-R climbing stairs item (NCT07341984). Salbutamol trial (NCT05860244) uses walking capacity as primary endpoint, confirming clinical relevance [NCT05860244]",
+      "digital_measurability": 3,
+      "digital_measurability_rationale": "NCT06820008 specifically investigates digital technologies for measuring physical impairment in ALS with usability outcomes. NCT06819358 uses 'gait instrument' as an outcome measure for postural gait disorders in ALS. These demonstrate emerging digital approaches to mobility assessment, though validation is still in progress [NCT06820008]",
+      "quadrant": "core_and_measurable",
+      "recommendation": "recommend",
+      "evidence_citations": [
+        "NCT06820008",
+        "NCT06819358",
+        "NCT05860244",
+        "NCT06881979",
+        "NCT07478172",
+        "NCT07341984"
+      ]
+    },
+    {
+      "coi": "upper_limb_function",
+      "clinical_importance": 4,
+      "clinical_importance_rationale": "Upper limb function is measured via 9 Hole Peg test (NCT07298486), QuickDASH, Fugl-Meyer Assessment, ABILHAND Scale, and ARAT in NCT07636538. Functional eating status (NCT07151950) and robotic glove assessment (NCT07298486) target hand/arm function decline that compromises independence [NCT07298486]",
+      "digital_measurability": 3,
+      "digital_measurability_rationale": "NCT07298486 uses a robotic glove to assess grip strength and fine motor control (9 Hole Peg test) as a device-based intervention/measurement. NCT07636538 deploys an 'Auto-calibrating System for Upper Limb disability Assessment' with multiple quantitative outputs. These represent device-based digital measurement approaches [NCT07636538]",
+      "quadrant": "core_and_measurable",
+      "recommendation": "recommend",
+      "evidence_citations": [
+        "NCT07298486",
+        "NCT07636538",
+        "NCT07151950",
+        "NCT07067229"
+      ]
+    },
+    {
+      "coi": "sleep_quality",
+      "clinical_importance": 3,
+      "clinical_importance_rationale": "Sleep measures appear as secondary endpoints in respiratory and QoL-focused ALS trials: Epworth Sleepiness Scale (NCT07071935), Karolinska Sleepiness Scale (NCT07071935), quality of sleep (NCT06719947). While clinically relevant as an indicator of respiratory decline, sleep is not a primary disease progression endpoint [NCT07071935]",
+      "digital_measurability": 4,
+      "digital_measurability_rationale": "NCT07502677 validates SleepImage wearable technology specifically in ALS for detecting respiratory failure during sleep, with outcomes including pulse rate variability and hypoxic burden. NCT07413718 uses nocturnal pulse oximetry as a digital endpoint. These represent validated wearable approaches to sleep-respiratory monitoring [NCT07502677]",
+      "quadrant": "peripheral_but_measurable",
+      "recommendation": "consider",
+      "evidence_citations": [
+        "NCT07502677",
+        "NCT07413718",
+        "NCT07071935",
+        "NCT06719947",
+        "NCT06841341"
+      ]
+    },
+    {
+      "coi": "psychological_distress",
+      "clinical_importance": 3,
+      "clinical_importance_rationale": "Depression and anxiety measures (HADS, MADRS, PHQ-9) appear as secondary endpoints in several ALS trials (NCT06968468, NCT07082192, NCT06656702). HAMD-17 is included in the Phase 2 CB03-154 trial (NCT07082192). However, psychological distress is not a primary disease progression marker [NCT07082192]",
+      "digital_measurability": 1,
+      "digital_measurability_rationale": "No DHT/sensor precedent for measuring psychological distress in ALS is evidenced in the corpus. All measures (HADS, MADRS, PHQ-9, GAD-7, C-SSRS) are traditional questionnaire-based PROs without demonstrated wearable or sensor-based digital alternatives [NCT06968468]",
+      "quadrant": "peripheral_and_unmeasured",
+      "recommendation": "deprioritize",
+      "evidence_citations": [
+        "NCT06656702",
+        "NCT07082192",
+        "NCT06968468",
+        "NCT07473765",
+        "NCT06992596"
+      ]
+    },
+    {
+      "coi": "fatigue",
+      "clinical_importance": 3,
+      "clinical_importance_rationale": "Fatigue Severity Scale appears as a secondary outcome in rehabilitation (NCT06881979) and EMS trials (NCT07478172). Correlation with SVC is explored (NCT06841341). Impact of fatigue on quality of life is assessed (NCT07178574). However, fatigue remains a supporting symptom measure rather than a core disease progression endpoint [NCT06881979]",
+      "digital_measurability": 1,
+      "digital_measurability_rationale": "No DHT/sensor precedent for measuring fatigue in ALS is evidenced in the corpus. All fatigue assessments use the Fatigue Severity Scale or similar self-report questionnaires without any demonstrated sensor-based digital measurement approach [NCT06881979]",
+      "quadrant": "peripheral_and_unmeasured",
+      "recommendation": "deprioritize",
+      "evidence_citations": [
+        "NCT06881979",
+        "NCT06719947",
+        "NCT07178574",
+        "NCT07478172",
+        "NCT06841341"
+      ]
+    },
+    {
+      "coi": "pain",
+      "clinical_importance": 2,
+      "clinical_importance_rationale": "Pain measures appear in only a few trials: NRS for facial pain (NCT07187388), VAS (NCT02478450), impact of pain on daily life (NCT07478172), and NPS for safety monitoring (NCT07093268). Pain is not used as a primary efficacy endpoint and is peripheral to the core motor neuron degeneration process [NCT07187388]",
+      "digital_measurability": 1,
+      "digital_measurability_rationale": "No DHT/sensor precedent for measuring pain in ALS is evidenced in the corpus. All pain assessments use traditional rating scales (NRS, VAS, NPS) without any demonstrated wearable or sensor-based digital measurement approach [NCT07187388]",
+      "quadrant": "peripheral_and_unmeasured",
+      "recommendation": "deprioritize",
+      "evidence_citations": [
+        "NCT07187388",
+        "NCT02478450",
+        "NCT07093268",
+        "NCT07478172"
+      ]
+    },
+    {
+      "coi": "muscle_cramps",
+      "clinical_importance": 2,
+      "clinical_importance_rationale": "Muscle cramps are specifically targeted in only one trial (NCT06527222 evaluating ranolazine) with frequency, severity, and QoL impact as outcomes. While distressing to patients, cramps are a peripheral symptom not central to disease progression measurement or regulatory endpoints [NCT06527222]",
+      "digital_measurability": 1,
+      "digital_measurability_rationale": "No DHT/sensor precedent for measuring muscle cramps in ALS is evidenced in the corpus. The single trial measuring cramps (NCT06527222) uses patient-reported frequency and severity scales without any sensor-based digital measurement approach [NCT06527222]",
+      "quadrant": "peripheral_and_unmeasured",
+      "recommendation": "deprioritize",
+      "evidence_citations": [
+        "NCT06527222"
+      ]
+    },
+    {
+      "coi": "nutritional_status",
+      "clinical_importance": 4,
+      "clinical_importance_rationale": "Body weight/BMI appears across multiple trials (NCT07606235, NCT06877143, NCT06765499). The hypercaloric nutrition trial (NCT06877143) uses BMI as a key secondary outcome. L3-SMI is used for skeletal muscle assessment (NCT06765499). Weight loss is an independent predictor of faster progression and mortality [NCT06877143]",
+      "digital_measurability": 1,
+      "digital_measurability_rationale": "No DHT/sensor precedent for measuring nutritional status in ALS is evidenced in the corpus. All nutritional assessments use clinical measures (body weight, BMI, bioelectrical impedance, CT imaging, dietary intake questionnaires) without demonstrated wearable or remote sensor-based digital approaches [NCT06877143]",
+      "quadrant": "core_not_yet_measurable",
+      "recommendation": "white_space",
+      "evidence_citations": [
+        "NCT07606235",
+        "NCT06877143",
+        "NCT06765499",
+        "NCT06608004",
+        "NCT06609213"
+      ]
+    },
+    {
+      "coi": "communication_ability",
+      "clinical_importance": 4,
+      "clinical_importance_rationale": "Communication restoration is the primary functional goal of multiple BCI/AT trials. NCT07407725 assesses performance outcomes for AT and BCI devices with ALSFRS-R context. Progressive locked-in state makes communication throughput a critical functional endpoint for severely affected ALS patients [NCT07407725]",
+      "digital_measurability": 5,
+      "digital_measurability_rationale": "Extensive DHT precedent: implantable BCIs (Neuralink N1 NCT07224256, Synchron Stentrode NCT07446114/NCT07543367, Paradromics Connexus NCT07357428), non-invasive EEG BCI (Cognixion ONE NCT06810219 measuring WPM and ITR), ECoG speech decoding (NCT07460037), and eye tracking. Multiple devices with quantitative communication throughput metrics [NCT07224256]",
+      "quadrant": "core_and_measurable",
+      "recommendation": "recommend",
+      "evidence_citations": [
+        "NCT07357428",
+        "NCT07446114",
+        "NCT07543367",
+        "NCT06810219",
+        "NCT07224256",
+        "NCT07521930",
+        "NCT07407725",
+        "NCT06992596",
+        "NCT07460037"
+      ]
+    },
+    {
+      "coi": "caregiver_burden",
+      "clinical_importance": 3,
+      "clinical_importance_rationale": "Caregiver burden measures appear as secondary endpoints in a limited number of trials: BSFC (NCT07454733), CBI (NCT07006571), Preparedness for Caregiving Scale (NCT07454733), and caregiver burden in BCI trials (NCT06829212). While important for supportive care, it is not a direct disease progression measure [NCT07454733]",
+      "digital_measurability": 1,
+      "digital_measurability_rationale": "No DHT/sensor precedent for measuring caregiver burden is evidenced in the corpus. All caregiver burden assessments use questionnaire-based instruments (BSFC, CBI, DCI) without any demonstrated sensor-based or digital health technology approach [NCT07454733]",
+      "quadrant": "peripheral_and_unmeasured",
+      "recommendation": "deprioritize",
+      "evidence_citations": [
+        "NCT07454733",
+        "NCT07006571",
+        "NCT06968468",
+        "NCT06829212"
+      ]
+    },
+    {
+      "coi": "spasticity",
+      "clinical_importance": 3,
+      "clinical_importance_rationale": "Spasticity is measured via Modified Ashworth Scale (NCT07636538, NCT02478450) and Penn UMN Score (NCT07067229, NCT07312240). While clinically relevant for phenotyping and symptom management, it is a secondary feature that supplements rather than drives primary efficacy endpoints [NCT07636538]",
+      "digital_measurability": 1,
+      "digital_measurability_rationale": "No DHT/sensor precedent for measuring spasticity in ALS is evidenced in the corpus. All spasticity assessments use clinical rating scales (MAS, PUMNS) requiring manual examination without any demonstrated wearable or sensor-based digital measurement approach [NCT02478450]",
+      "quadrant": "peripheral_and_unmeasured",
+      "recommendation": "deprioritize",
+      "evidence_citations": [
+        "NCT07636538",
+        "NCT02478450",
+        "NCT07312240",
+        "NCT07067229"
+      ]
+    },
+    {
+      "coi": "dyspnea",
+      "clinical_importance": 3,
+      "clinical_importance_rationale": "Dyspnea is assessed via Modified Borg Dyspnea Scale in a few trials (NCT06719947, NCT07178574) and as global rate of change of breathing (NCT07071935). While clinically meaningful as a patient-reported respiratory symptom, it serves as a secondary measure subordinate to objective respiratory function [NCT07071935]",
+      "digital_measurability": 1,
+      "digital_measurability_rationale": "No DHT/sensor precedent for measuring dyspnea in ALS is evidenced in the corpus. All dyspnea assessments use subjective rating scales (Modified Borg, Borg RPE) without any demonstrated wearable or sensor-based digital measurement [NCT04089696]",
+      "quadrant": "peripheral_and_unmeasured",
+      "recommendation": "deprioritize",
+      "evidence_citations": [
+        "NCT06719947",
+        "NCT07178574",
+        "NCT07071935",
+        "NCT04089696"
+      ]
+    },
+    {
+      "coi": "muscle_composition",
+      "clinical_importance": 3,
+      "clinical_importance_rationale": "EIM is used as a biomarker endpoint (NCT06491732, NCT02478450). Diaphragm ultrasound measures (excursion, thickening) appear in NCT07170865 and NCT06841341. Thigh muscle volume is tracked (NCT05860244). These are objective quantitative biomarkers but serve as supporting/exploratory measures rather than primary efficacy endpoints [NCT06491732]",
+      "digital_measurability": 4,
+      "digital_measurability_rationale": "NCT06491732 specifically validates the portable Myolex mScan EIM device as an ALS biomarker, tracking EIM phase change over time. NCT02478450 uses EIM values on bilateral limbs. These represent validated, portable, sensor-based devices for quantitative muscle composition assessment that could function outside traditional clinical settings [NCT06491732]",
+      "quadrant": "peripheral_but_measurable",
+      "recommendation": "consider",
+      "evidence_citations": [
+        "NCT06491732",
+        "NCT02478450",
+        "NCT05860244",
+        "NCT07170865",
+        "NCT06841341"
+      ]
+    },
+    {
+      "coi": "neurophysiological_integrity",
+      "clinical_importance": 3,
+      "clinical_importance_rationale": "CMAP, MUNE/MUNIX, TMS measures appear as secondary/exploratory endpoints across multiple trials (NCT07067229, NCT06726577, NCT06681610, NCT06649955). Neurophysiological Index and denervation scores are used (NCT07312240, NCT06607900). These provide objective quantification but remain biomarker-level measures rather than regulatory primary endpoints [NCT07067229]",
+      "digital_measurability": 3,
+      "digital_measurability_rationale": "NCT07478172 uses decomposition electromyography (dEMG) for motor unit firing rate analysis as a primary outcome. Threshold tracking nerve conduction studies are device-based digital measurements (NCT06649955). TMS cortical excitability measures are device-derived (NCT06681610). These are specialized electronic devices producing digital data, though typically clinic-based [NCT07478172]",
+      "quadrant": "peripheral_but_measurable",
+      "recommendation": "consider",
+      "evidence_citations": [
+        "NCT07478172",
+        "NCT07067229",
+        "NCT06726577",
+        "NCT06681610",
+        "NCT06649955",
+        "NCT07312240"
+      ]
+    }
+  ],
+  "recommended_cois": [
+    "respiratory_function",
+    "communication_ability",
+    "overall_functional_status",
+    "speech_function",
+    "muscle_strength",
+    "physical_mobility",
+    "upper_limb_function",
+    "sleep_quality",
+    "muscle_composition",
+    "neurophysiological_integrity"
+  ],
+  "white_space_cois": [
+    "swallowing_function",
+    "quality_of_life",
+    "cognitive_function",
+    "survival",
+    "nutritional_status"
+  ],
+  "run_notes": [
+    "TA-first V1: no recall_patterns pass at the TA level. TA-level queries are broad, so this corpus is noisier than a COI-first pull; PI-branded and methods-only constructs may be under-surfaced. The ClinicalTrials.gov outcome-measures lane is the high-precision, construct-explicit backbone.",
+    "Emitted criteria stubs are DRAFT: positive_signals are vocabulary the model observed in-corpus, not the hand-tuned indication-specific vocabulary in criteria.py's authored entries. Human-review each stub before an unattended coi_first run trusts it.",
+    "V1 stops at the reviewed shortlist. Running coi_first on the accepted COIs is a separate, human-gated step."
+  ]
+}
